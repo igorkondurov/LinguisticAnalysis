@@ -424,7 +424,7 @@ public class Scanner {
         StringBuilder result = new StringBuilder();
         for (Character ch:
              list) {
-            if (ch != null) {
+            if (ch != '\u0000') {
                 result.append(ch);
             }
         }
