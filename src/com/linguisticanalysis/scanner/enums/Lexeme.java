@@ -12,6 +12,7 @@ public enum Lexeme {
     T_RETURN(14),
     T_IF(15),
 
+    // Знаки операций
     T_EQ(20),
     T_PLUS(21),
     T_SUB(22),
@@ -24,14 +25,22 @@ public enum Lexeme {
     T_AND(29),
     T_OR(30),
 
-    T_CONST_INT(35),
-    T_CONST_CHAR(36),
-    T_SEMI(37),
-    T_COM(38),
-    T_LEFT_ROUND_BR(39),
-    T_RIGHT_ROUND_BR(40),
-    T_LEFT_BRACE(41),
-    T_RIGHT_BRICE(42),
+    // Знаки сравнения
+    T_MORE(31),
+    T_LESS(32),
+    T_EQUAL(33),
+    T_NOT_EQUAL(34),
+    T_MORE_AND_EQUAL(35),
+    T_LESS_AND_EQUAL(36),
+
+    T_CONST_INT(40),
+    T_CONST_CHAR(41),
+    T_SEMI(42),
+    T_COM(43),
+    T_LEFT_ROUND_BR(44),
+    T_RIGHT_ROUND_BR(45),
+    T_LEFT_BRACE(46),
+    T_RIGHT_BRICE(47),
 
     T_END(1000),
     T_ERROR(2000);

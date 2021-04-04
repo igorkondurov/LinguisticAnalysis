@@ -10,38 +10,44 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Scanner {
+
+    /**
+     * Максимальный размер лексемы
+     */
+
+    private static final int MAXLEX = 20;
     /**
      * Ключевые слова (идентификаторы)
      */
-    private static final List<String> stringKeywords = Arrays.asList(
+    private static final String[] stringKeywords = {
             "int",
             "char",
             "void",
             "main",
             "return",
             "if"
-    );
+    };
 
     /**
      * Ключевые слова (коды идентификаторов)
      */
-    private static final List<Lexeme> lexemeKeywords = Arrays.asList(
+    private static final Lexeme[] lexemeKeywords = {
             Lexeme.T_INT,
             Lexeme.T_CHAR,
             Lexeme.T_VOID,
             Lexeme.T_MAIN,
             Lexeme.T_RETURN,
             Lexeme.T_IF
-    );
+    };
 
     /**
      * Игнорируемые символы
      */
-    private static final List<String> ignoreSymbols = Arrays.asList(
-            " ",
-            "\t",
-            "\n"
-    );
+    private static final char[] ignoreSymbols = {
+            ' ',
+            '\t',
+            '\n'
+    };
 
     /**
      * Текст программы для сканирования
@@ -58,7 +64,7 @@ public class Scanner {
      */
     private int lineNumber;
 
-    Scanner(String fileName) {
+    public Scanner(String fileName) {
         readProgramFromTextFile(fileName);
         textPointer = 0;
         lineNumber = 0;
@@ -69,10 +75,10 @@ public class Scanner {
      */
     public LexemeModel getNextLexeme() {
         int i = 0; // лексема заполняется с позиции i
-        // пропускаем все пробелы, табуляции, пустые строки, комментарии
-        List<char> currentSymbol = new ArrayList<char>();
 
+        char[] currentLexemeSymbols = new char[MAXLEX];
 
+        // Пропускаем все пробелы, табуляции, пустые строки, комментарии
         while(isEqualIgnoredSymbol(sourceText[textPointer]) || (sourceText[textPointer] == '/' && sourceText[textPointer+1] == '/')){
             
             // пробел, табуляция
@@ -96,55 +102,55 @@ public class Scanner {
             }
         }
 
-        // конец программы
+        // Провеока на конец программы
         if (sourceText[textPointer] == '\0') {
-            currentSymbol.set(0, '#');
+            currentLexemeSymbols[0] = '#';
 
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_END.lexemeCode);
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_END.lexemeCode);
         }
 
         // id или keyword
         if(((sourceText[textPointer]>='a')&&(sourceText[textPointer]<='z')) ||
                 ((sourceText[textPointer]>='A')&&(sourceText[textPointer]<='Z'))) {
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             while(((sourceText[textPointer]>='a')&&(sourceText[textPointer]<='z')) ||
                     ((sourceText[textPointer]>='A')&&(sourceText[textPointer]<='Z')) ||
                     ((sourceText[textPointer]>='0')&&(sourceText[textPointer]<='9'))){
                 if(i < MAXLEX-1){
-                    currentSymbol.set(i++, sourceText[textPointer++]);
+                    currentLexemeSymbols[i++] = sourceText[textPointer++];
                 }
                 else{
                     textPointer++;
                 }
             }
 
-            // сверяем с лексикой языка
-            for(int j=0; j<MAXKEYW; j++){
-                if(strcmp(currentSymbol,keywords[j]) == 0){
-                    return indexKeyword[j];
+            // сверяем с ключевыми словами
+            for(int j=0; j<lexemeKeywords.length; j++){
+                if(listToSting(currentLexemeSymbols).equals(stringKeywords[j])){
+                    return new LexemeModel(listToSting(currentLexemeSymbols),lexemeKeywords[j].lexemeCode);
                 }
             }
-            return Tid;
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_ID.lexemeCode);
         }
 
         // целочисленная константа
         else if((sourceText[textPointer]>='0')&&
                 (sourceText[textPointer]<='9')) {
 
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
-            boolean flag = false;
+            boolean errorLengthFlag = false;
 
             //ошибка длины константы
             while((sourceText[textPointer]>='0') &&
                     (sourceText[textPointer]<='9')) {
 
                 if(i < MAXLEX-1){
-                    currentSymbol.set(i++, sourceText[textPointer++]);
+                    currentLexemeSymbols[i++] = sourceText[textPointer++];
                 }
                 else {
-                    flag = true;
+                    errorLengthFlag = true;
                     textPointer++;
                 }
             }
@@ -152,214 +158,204 @@ public class Scanner {
             if((sourceText[textPointer]>='a' && sourceText[textPointer]<='z') || (sourceText[textPointer]>='A' && sourceText[textPointer]<='Z')) {
                 while (!isEqualIgnoredSymbol(sourceText[textPointer]) &&
                         sourceText[textPointer] != ';') {
-                    currentSymbol.set(i++, sourceText[textPointer++]);
+                    currentLexemeSymbols[i++] = sourceText[textPointer++];
                 }
-                printError("",currentSymbol);
+                printError("",listToSting(currentLexemeSymbols));
             }
 
-            if(flag){
-                printError("Слишком длинная константа",currentSymbol);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_ERROR.lexemeCode);
+            if(errorLengthFlag){
+                printError("Слишком длинная целочисленная константа",listToSting(currentLexemeSymbols));
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_ERROR.lexemeCode);
             }
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_CONST_INT.lexemeCode);
-        }
-
-        // =
-        else if(sourceText[textPointer] =='='){
-            currentSymbol.set(i++, sourceText[textPointer++]);
-
-            if(sourceText[textPointer] == '='){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                printError("",currentSymbol);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_ERROR.lexemeCode);
-            }
-            return Tassign;
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_CONST_INT.lexemeCode);
         }
 
         // * *=
         else if(sourceText[textPointer] =='*'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             if(sourceText[textPointer] == '='){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return Tmuleq;
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_MUL_EQ.lexemeCode);
             }
-            return Tmul;
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_MUL.lexemeCode);
         }
 
         // / /=
         else if(sourceText[textPointer] =='/'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             if(sourceText[textPointer] == '='){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return Tdiveq;
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_DIV_EQ.lexemeCode);
             }
-            return Tdiv;
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_DIV.lexemeCode);
         }
 
-        // % %=
-        else if(sourceText[textPointer] =='%'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
-
-            if(sourceText[textPointer] == '='){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return Tmodeq;
-            }
-            return Tmod;
-        }
-
-        // + += ++
+        // + +=
         else if(sourceText[textPointer] =='+'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             if(sourceText[textPointer] == '='){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return Tsumeq;
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_PLUS_EQ.lexemeCode);
             }
-            if(sourceText[textPointer] == '+'){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return Tinc;
-            }
-            return Tsum;
+
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_PLUS.lexemeCode);
         }
 
-        // - -= --
+        // - -=
         else if(sourceText[textPointer] =='-'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             if(sourceText[textPointer] == '='){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return Tsubeq;
-            }
-            if(sourceText[textPointer] == '-'){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return Tdec;
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_SUB.lexemeCode);
             }
 
-            return Tsub;
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_SUB.lexemeCode);
         }
 
 
         // &&
         else if(sourceText[textPointer] =='&'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             if(sourceText[textPointer] == '&'){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_END.lexemeCode);
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_AND.lexemeCode);
             }
-            currentSymbol.set(i, sourceText[textPointer++]);
-            printError("",currentSymbol);
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_ERROR.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            printError("",listToSting(currentLexemeSymbols));
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_ERROR.lexemeCode);
         }
 
         // ||
         else if(sourceText[textPointer] =='|'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             if(sourceText[textPointer] == '|'){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_OR.lexemeCode);
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_OR.lexemeCode);
             }
 
-            currentSymbol.set(i, sourceText[textPointer]);
-            printError("",currentSymbol);
-            textPointer++;
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_ERROR.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            printError("",listToSting(currentLexemeSymbols));
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_ERROR.lexemeCode);
         }
 
-
-        // !
-        else if(sourceText[textPointer] =='!'){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+        // = ==
+        else if(sourceText[textPointer] =='='){
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             if(sourceText[textPointer] == '='){
-                currentSymbol.set(i, sourceText[textPointer++]);
-                printError("",currentSymbol);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_ERROR.lexemeCode);
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_EQUAL.lexemeCode);
+            }
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_EQ.lexemeCode);
+        }
+
+        // ! !=
+        else if(sourceText[textPointer] =='!'){
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
+
+            if(sourceText[textPointer] == '='){
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_NOT_EQUAL.lexemeCode);
             }
 
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_NOT.lexemeCode);
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_NOT.lexemeCode);
+        }
+
+        // > >=
+        else if(sourceText[textPointer] =='>'){
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
+
+            if(sourceText[textPointer] == '='){
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_MORE_AND_EQUAL.lexemeCode);
+            }
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_MORE.lexemeCode);
+        }
+
+        // < <=
+        else if(sourceText[textPointer] =='<'){
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
+
+            if(sourceText[textPointer] == '='){
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_LESS_AND_EQUAL.lexemeCode);
+            }
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_LESS.lexemeCode);
         }
 
 
         // Символьная константа
         else if(sourceText[textPointer] =='\''){
-            currentSymbol.set(i++, sourceText[textPointer++]);
+            currentLexemeSymbols[i++] = sourceText[textPointer++];
 
             // Если сразу вторая кавычка
             if(sourceText[textPointer]=='\'')
             {
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_CONST_CHAR.lexemeCode);
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_CONST_CHAR.lexemeCode);
             }
 
             // Если внутри кавычки символ и после него кавычка
             else if(sourceText[textPointer+1]=='\'')
             {
-                currentSymbol.set(i++, sourceText[textPointer++]);
-                currentSymbol.set(i, sourceText[textPointer++]);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_CONST_CHAR.lexemeCode);
+                currentLexemeSymbols[i++] = sourceText[textPointer++];
+                currentLexemeSymbols[i] = sourceText[textPointer++];
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_CONST_CHAR.lexemeCode);
             }
             // Иначе - ошибка
             else {
-                currentSymbol.set(0, '\'');
-                printError("",currentSymbol);
-                return new LexemeModel(currentSymbol.toString(),Lexeme.T_ERROR.lexemeCode);
+                currentLexemeSymbols[0] = '\'';
+                printError("",listToSting(currentLexemeSymbols));
+                return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_ERROR.lexemeCode);
             }
         }
 
         else if(sourceText[textPointer] ==','){
-            currentSymbol.set(i, sourceText[textPointer++]);
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_COM.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_COM.lexemeCode);
         }
         else if(sourceText[textPointer] ==';'){
-            currentSymbol.set(i, sourceText[textPointer++]);
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_SEMI.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_SEMI.lexemeCode);
         }
         else if(sourceText[textPointer] =='('){
-            currentSymbol.set(i, sourceText[textPointer++]);
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_LEFT_ROUND_BR.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_LEFT_ROUND_BR.lexemeCode);
         }
         else if(sourceText[textPointer] ==')'){
-            currentSymbol.set(i, sourceText[textPointer++]);
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_RIGHT_ROUND_BR.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_RIGHT_ROUND_BR.lexemeCode);
         }
         else if(sourceText[textPointer] =='{'){
-            currentSymbol.set(i, sourceText[textPointer++]);
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_LEFT_BRACE.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_LEFT_BRACE.lexemeCode);
         }
         else if(sourceText[textPointer] =='}'){
-            currentSymbol.set(i, sourceText[textPointer++]);
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_RIGHT_BRICE.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_RIGHT_BRICE.lexemeCode);
         }
         else {
-            currentSymbol.set(0, sourceText[textPointer]);
-            printError("Неверный символ",currentSymbol);
-            textPointer++;
-            return new LexemeModel(currentSymbol.toString(),Lexeme.T_ERROR.lexemeCode);
+            currentLexemeSymbols[i] = sourceText[textPointer++];
+            printError("Неверный символ ",listToSting(currentLexemeSymbols));
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_ERROR.lexemeCode);
         }
     }
 
-    public void printError(String description, List<char> lexeme) {
-        if (lexeme.toArray().length == 0) {
+    public void printError(String description, String lexeme) {
+        if (lexeme.isEmpty()) {
             System.out.println("Ошибка: " + description);
         } else {
-            System.out.println("Ошибка: " + description + ". Неверный символ " + lexeme + "\nСтрока " + lineNumber + 1);
+            System.out.println("Ошибка: " + description + ". Неверный символ " + lexeme + "\nСтрока " + (lineNumber+1));
         }
-    }
 
-    public static List<String> getStringKeywords() {
-        return stringKeywords;
-    }
-
-    public static List<Lexeme> getLexemeKeywords() {
-        return lexemeKeywords;
-    }
-
-    public static List<String> getIgnoreSymbols() {
-        return ignoreSymbols;
+        System.exit(1);
     }
 
     public char[] getSourceText() {
@@ -403,7 +399,7 @@ public class Scanner {
                 theString.append("\n").append(scanner.nextLine());
             }
 
-            sourceText = theString.toString().toCharArray();
+            sourceText = (theString.toString() + "\0").toCharArray();
         } catch (IOException e) {
             printError("Ошибка чтения файла! " + e.toString(), "");
         }
@@ -412,10 +408,26 @@ public class Scanner {
     /**
      * Проверка на игнорируемый символ
      *
-     * @param lexeme лексема
+     * @param lexemeSymb лексема в виде символа
      * @return флаг-результат проверки на игнорируемый символ
      */
-    private boolean isEqualIgnoredSymbol(char lexeme) {
-        return ignoreSymbols.contains(lexeme);
+    private boolean isEqualIgnoredSymbol(char lexemeSymb) {
+        for (char symbol:
+             ignoreSymbols) {
+            if (symbol == lexemeSymb)
+                return true;
+        }
+        return false;
+    }
+
+    private String listToSting(char[] list) {
+        StringBuilder result = new StringBuilder();
+        for (Character ch:
+             list) {
+            if (ch != null) {
+                result.append(ch);
+            }
+        }
+        return result.toString();
     }
 }
