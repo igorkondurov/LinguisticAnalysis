@@ -5,9 +5,6 @@ import com.linguisticanalysis.scanner.scanner.LexemeModel;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Scanner {
 
@@ -339,7 +336,7 @@ public class Scanner {
         }
         else if(sourceText[textPointer] =='}'){
             currentLexemeSymbols[i] = sourceText[textPointer++];
-            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_RIGHT_BRICE.lexemeCode);
+            return new LexemeModel(listToSting(currentLexemeSymbols),Lexeme.T_RIGHT_BRACE.lexemeCode);
         }
         else {
             currentLexemeSymbols[i] = sourceText[textPointer++];
@@ -356,14 +353,6 @@ public class Scanner {
         }
 
         System.exit(1);
-    }
-
-    public char[] getSourceText() {
-        return sourceText;
-    }
-
-    public void setSourceText(char[] sourceText) {
-        this.sourceText = sourceText;
     }
 
     public int getTextPointer() {
