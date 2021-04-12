@@ -11,6 +11,7 @@ public enum Lexeme {
     T_MAIN(13),
     T_RETURN(14),
     T_IF(15),
+    T_ELSE(16),
 
     // Знаки операций
     T_EQ(20),

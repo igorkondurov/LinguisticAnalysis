@@ -22,7 +22,8 @@ public class Scanner {
             "void",
             "main",
             "return",
-            "if"
+            "if",
+            "else"
     };
 
     /**
@@ -34,7 +35,8 @@ public class Scanner {
             Lexeme.T_VOID,
             Lexeme.T_MAIN,
             Lexeme.T_RETURN,
-            Lexeme.T_IF
+            Lexeme.T_IF,
+            Lexeme.T_ELSE
     };
 
     /**
@@ -99,7 +101,7 @@ public class Scanner {
             }
         }
 
-        // Провеока на конец программы
+        // Проверка на конец программы
         if (sourceText[textPointer] == '\0') {
             currentLexemeSymbols[0] = '#';
 

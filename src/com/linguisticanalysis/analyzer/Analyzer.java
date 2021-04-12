@@ -11,11 +11,41 @@ public class Analyzer {
         this.scanner = scanner;
     }
 
+
+    // Проверка на лексемы
+    private void checkLexeme(Lexeme[] lexemes, String errorText) {
+        LexemeModel lexemeType = scanner.getNextLexeme();
+        Boolean errorFlag = true;
+        for (Lexeme lexeme:
+             lexemes) {
+            if (lexemeType.getCode() == lexeme.lexemeCode) {
+                errorFlag = false;
+                break;
+            }
+        }
+        if (errorFlag) {
+            scanner.printError(errorText, lexemeType.getName());
+        }
+    }
+
+    // Проверка на лексемы
+    private void checkLexeme(Lexeme lexeme, String errorText) {
+        LexemeModel lexemeType = scanner.getNextLexeme();
+        if (lexemeType.getCode() != lexeme.lexemeCode) {
+            scanner.printError(errorText, lexemeType.getName());
+        }
+    }
+
+    // Устанавливает указатель сканера
     private void setPointerTo(int pointer, int line) {
         scanner.setTextPointer(pointer);
         scanner.setLineNumber(line);
     }
 
+
+    /**
+     * Аксиома
+     */
     public void S() {
         int numberOfMains = 0;
         int lastPointer = scanner.getTextPointer();
@@ -38,15 +68,9 @@ public class Analyzer {
                 lexemeType = scanner.getNextLexeme();
                 if (lexemeType.getCode() == Lexeme.T_MAIN.lexemeCode) {
                     numberOfMains += 1;
-                    lexemeType = scanner.getNextLexeme();
-                    if (lexemeType.getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
-                        scanner.printError("Ожидался символ (", lexemeType.getName());
-                    }
 
-                    lexemeType = scanner.getNextLexeme();
-                    if (lexemeType.getCode() != Lexeme.T_RIGHT_ROUND_BR.lexemeCode) {
-                        scanner.printError("Ожидался символ )", lexemeType.getName());
-                    }
+                    checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
+                    checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
 
                     O();
                 } else {
@@ -66,51 +90,45 @@ public class Analyzer {
         }
     }
 
+    /**
+     * Описание функции
+     */
     private void A() {
         LexemeModel lexemeType;
-
         TF();
         ID();
-
-        lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
-            scanner.printError("Ожидался символ (", lexemeType.getName());
-        }
-
+        checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
         P();
-
-        lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_RIGHT_ROUND_BR.lexemeCode) {
-            scanner.printError("Ожидался символ )", lexemeType.getName());
-        }
-
+        checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
         O();
     }
 
+    /**
+     * Тип данных
+     */
     private void T() {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_CHAR.lexemeCode && lexemeType.getCode() != Lexeme.T_INT.lexemeCode) {
-            scanner.printError("Ожидался тип char или int", lexemeType.getName());
-        }
+        checkLexeme(new Lexeme[]{Lexeme.T_CHAR, Lexeme.T_INT}, "Ожидался тип char или int");
     }
 
+    /**
+     * Тип функции
+     */
     private void TF() {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_CHAR.lexemeCode && lexemeType.getCode() != Lexeme.T_INT.lexemeCode && lexemeType.getCode() != Lexeme.T_VOID.lexemeCode) {
-            scanner.printError("Ожидался тип функции char, int или void", lexemeType.getName());
-        }
+        checkLexeme(new Lexeme[]{Lexeme.T_CHAR, Lexeme.T_INT, Lexeme.T_VOID}, "Ожидался тип функции char, int или void");
     }
 
+    /**
+     * Описание переменных одного типа
+     */
     private void B() {
         T();
         L();
-
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_SEMI.lexemeCode) {
-            scanner.printError("Ожидался символ ;", lexemeType.getName());
-        }
+        checkLexeme(Lexeme.T_SEMI, "Ожидался символ ;");
     }
 
+    /**
+     * Список переменных при описании
+     */
     private void L() {
 
         int lastPointer;
@@ -135,25 +153,25 @@ public class Analyzer {
         setPointerTo(lastPointer, lastLine);
     }
 
+    /**
+     * Блок { }
+     */
     private void O() {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_LEFT_BRACE.lexemeCode) {
-            scanner.printError("Ожидался символ {", lexemeType.getName());
-        }
+        checkLexeme(Lexeme.T_LEFT_BRACE, "Ожидался символ {");
 
         int lastPointer = scanner.getTextPointer();
         int lastLine = scanner.getLineNumber();
-        lexemeType = scanner.getNextLexeme();
+        LexemeModel lexemeType = scanner.getNextLexeme();
         if (lexemeType.getCode() != Lexeme.T_RIGHT_BRACE.lexemeCode) {
             setPointerTo(lastPointer, lastLine);
             Z();
-            lexemeType = scanner.getNextLexeme();
-            if (lexemeType.getCode() != Lexeme.T_RIGHT_BRACE.lexemeCode) {
-                scanner.printError("Ожидался символ }", lexemeType.getName());
-            }
+            checkLexeme(Lexeme.T_RIGHT_BRACE, "Ожидался символ }");
         }
     }
 
+    /**
+     * Операторы
+     */
     private void Z() {
         LexemeModel lexemeType;
         int lastPointer = scanner.getTextPointer();
@@ -175,6 +193,9 @@ public class Analyzer {
         setPointerTo(lastPointer, lastLine);
     }
 
+    /**
+     * Один оператор
+     */
     private void Q() {
         int lastPointer = scanner.getTextPointer();
         int lastLine = scanner.getLineNumber();
@@ -195,70 +216,72 @@ public class Analyzer {
                     F();
                 }
             }
-
-            lexemeType = scanner.getNextLexeme();
-            if (lexemeType.getCode() != Lexeme.T_SEMI.lexemeCode) {
-                scanner.printError("Ожидался символ ;", lexemeType.getName());
-            }
+            checkLexeme(Lexeme.T_SEMI, "Ожидался символ ;");
         }
     }
 
+    /**
+     * Присваивание
+     */
     private void F() {
         ID();
         E();
         A1();
     }
 
+    /**
+     * Блок условий
+     */
     private void IF() {
 
         // if
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_IF.lexemeCode) {
-            scanner.printError("Ожидалось ключевое слово if", lexemeType.getName());
-        }
-
-
-        // (
-        lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
-            scanner.printError("Ожидалось символ (", lexemeType.getName());
-        }
-
+        checkLexeme(Lexeme.T_IF, "Ожидалось ключевое слово if");
+        checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
         A1();
-
-        // )
-        lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_RIGHT_ROUND_BR.lexemeCode) {
-            scanner.printError("Ожидалось символ )", lexemeType.getName());
-        }
-
+        checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
         O();
+
+        // else if
+        int lastPointer = scanner.getTextPointer();
+        int lastLine = scanner.getLineNumber();
+        while (scanner.getNextLexeme().getCode() == Lexeme.T_ELSE.lexemeCode && scanner.getNextLexeme().getCode() == Lexeme.T_IF.lexemeCode) {
+            checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
+            A1();
+            checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
+            O();
+            lastLine = scanner.getLineNumber();
+            lastPointer = scanner.getTextPointer();
+        }
+        setPointerTo(lastPointer, lastLine);
+
+
+        // else
+        lastPointer = scanner.getTextPointer();
+        lastLine = scanner.getLineNumber();
+        if (scanner.getNextLexeme().getCode() == Lexeme.T_ELSE.lexemeCode) {
+            O();
+        } else {
+            setPointerTo(lastPointer, lastLine);
+        }
     }
 
+    /**
+     * Вызов функции
+     */
     private void R() {
-
         ID();
-
-        // (
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
-            scanner.printError("Ожидалось символ (", lexemeType.getName());
-        }
-
+        checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
         M();
-
-        // )
-        lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_RIGHT_ROUND_BR.lexemeCode) {
-            scanner.printError("Ожидалось символ )", lexemeType.getName());
-        }
+        checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
     }
 
+    /**
+     * Параметры функции
+     */
     private void P() {
         int lastPointer = scanner.getTextPointer();
         int lastLine = scanner.getLineNumber();
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
+        if (scanner.getNextLexeme().getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
             setPointerTo(lastPointer, lastLine);
             do {
                 T();
@@ -270,13 +293,13 @@ public class Analyzer {
         }
     }
 
-
-    //
+    /**
+     * Список аргументов функции
+     */
     private void M() {
         int lastPointer = scanner.getTextPointer();
         int lastLine = scanner.getLineNumber();
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
+        if (scanner.getNextLexeme().getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
             setPointerTo(lastPointer, lastLine);
             do {
                 A1();
@@ -287,34 +310,32 @@ public class Analyzer {
         }
     }
 
+    /**
+     * Инициал
+     */
     private void I() {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_EQ.lexemeCode) {
-            scanner.printError("Ожидался символ =", lexemeType.getName());
-        }
-
+        checkLexeme(Lexeme.T_EQ, "Ожидался символ =");
         A1();
     }
 
+    /**
+     * Оператор присваивания
+     */
     private void E() {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_PLUS_EQ.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_SUB_EQ.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_DIV_EQ.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_MUL_EQ.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_EQ.lexemeCode) {
-            scanner.printError("Ожидался оператор присваивания", lexemeType.getName());
-        }
+        Lexeme[] lexemes = new Lexeme[]{Lexeme.T_PLUS_EQ, Lexeme.T_SUB_EQ, Lexeme.T_DIV_EQ, Lexeme.T_MUL_EQ, Lexeme.T_EQ};
+        checkLexeme(lexemes, "Ожидался оператор присваивания");
     }
 
+    /**
+     * Идентификатор (име переменной или функции)
+     */
     private void ID() {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_ID.lexemeCode) {
-            scanner.printError("Ожидалось имя перемнной или функции", lexemeType.getName());
-        }
+        checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
     }
 
-
+    /**
+     * Логические операции
+     */
     private void A1() {
         int lastPointer;
         int lastLine;
@@ -330,6 +351,9 @@ public class Analyzer {
         setPointerTo(lastPointer, lastLine);
     }
 
+    /**
+     * Операции сравнения
+     */
     private void A2() {
         int lastPointer;
         int lastLine;
@@ -351,6 +375,9 @@ public class Analyzer {
         }
     }
 
+    /**
+     * Арифметические операции
+     */
     private void A3() {
         int lastPointer;
         int lastLine;
@@ -367,17 +394,17 @@ public class Analyzer {
         setPointerTo(lastPointer, lastLine);
     }
 
+    /**
+     * Значение (переменная, константы, результат вызова функции, выражение)
+     */
     private void A4() {
-        int lastPointer;
-        int lastLine;
+        int lastPointer = scanner.getTextPointer();
+        int lastLine = scanner.getLineNumber();
         LexemeModel lexemeType = scanner.getNextLexeme();
 
         if (lexemeType.getCode() == Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
             A1();
-            lexemeType = scanner.getNextLexeme();
-            if (lexemeType.getCode() != Lexeme.T_RIGHT_ROUND_BR.lexemeCode) {
-                scanner.printError("Ожидался символ )", lexemeType.getName());
-            }
+            checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
         } else if (lexemeType.getCode() == Lexeme.T_ID.lexemeCode) {
             lastPointer = scanner.getTextPointer();
             lastLine = scanner.getLineNumber();
@@ -386,10 +413,10 @@ public class Analyzer {
             if (lexemeType.getCode() == Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
                 R();
             }
-        } else if (lexemeType.getCode() != Lexeme.T_CONST_CHAR.lexemeCode && lexemeType.getCode() != Lexeme.T_CONST_INT.lexemeCode) {
-            scanner.printError("Ожидалась целочисленная или символьная константа", lexemeType.getName());
+        } else {
+            setPointerTo(lastPointer, lastLine);
+            Lexeme[] lexemes = new Lexeme[]{Lexeme.T_CONST_CHAR, Lexeme.T_CONST_INT};
+            checkLexeme(lexemes, "Ожидалась целочисленная или символьная константа");
         }
     }
-
-
 }
