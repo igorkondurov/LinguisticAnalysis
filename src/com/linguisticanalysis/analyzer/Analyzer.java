@@ -321,7 +321,7 @@ public class Analyzer {
         do {
             lastPointer = scanner.getTextPointer();
             lastLine = scanner.getLineNumber();
-            while (scanner.getNextLexeme().getCode() == Lexeme.T_NOT.lexemeCode);
+            while (scanner.getNextLexeme().getCode() == Lexeme.T_NOT.lexemeCode) ;
             setPointerTo(lastPointer, lastLine);
             A2();
             lastPointer = scanner.getTextPointer();
@@ -339,16 +339,16 @@ public class Analyzer {
         lastPointer = scanner.getTextPointer();
         lastLine = scanner.getLineNumber();
         LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != Lexeme.T_MORE.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_LESS.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_MORE_AND_EQUAL.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_LESS_AND_EQUAL.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_EQUAL.lexemeCode &&
-                lexemeType.getCode() != Lexeme.T_NOT_EQUAL.lexemeCode) {
+        if (lexemeType.getCode() == Lexeme.T_MORE.lexemeCode ||
+                lexemeType.getCode() == Lexeme.T_LESS.lexemeCode ||
+                lexemeType.getCode() == Lexeme.T_MORE_AND_EQUAL.lexemeCode ||
+                lexemeType.getCode() == Lexeme.T_LESS_AND_EQUAL.lexemeCode ||
+                lexemeType.getCode() == Lexeme.T_EQUAL.lexemeCode ||
+                lexemeType.getCode() == Lexeme.T_NOT_EQUAL.lexemeCode) {
+            A3();
+        } else {
             setPointerTo(lastPointer, lastLine);
         }
-
-
     }
 
     private void A3() {
