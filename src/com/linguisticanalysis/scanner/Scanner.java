@@ -61,8 +61,8 @@ public class Scanner {
      */
     private int lineNumber;
 
-    public Scanner(String fileName) {
-        readProgramFromTextFile(fileName);
+    public Scanner(String filePathWithName) {
+        readProgramFromTextFile(filePathWithName);
         textPointer = 0;
         lineNumber = 0;
     }

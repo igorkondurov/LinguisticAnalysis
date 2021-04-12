@@ -9,11 +9,6 @@ public class Main {
         System.out.println("123");
 
         Scanner scan = new Scanner("/Users/egor/Desktop/untitled.txt");
-//        LexemeModel lexeme = new LexemeModel("", 0);
-//        while (lexeme.getCode() != Lexeme.T_END.lexemeCode) {
-//            lexeme = scan.getNextLexeme();
-//            System.out.println("Лексема " + lexeme.getName() + " - " + lexeme.getCode());
-//        }
         Analyzer analyzer = new Analyzer(scan);
         analyzer.S();
     }

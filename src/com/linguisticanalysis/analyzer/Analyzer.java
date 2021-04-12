@@ -17,6 +17,7 @@ public class Analyzer {
     }
 
     public void S() {
+        int numberOfMains = 0;
         int lastPointer = scanner.getTextPointer();
         int lastLine = scanner.getLineNumber();
         LexemeModel lexemeType = scanner.getNextLexeme();
@@ -36,6 +37,7 @@ public class Analyzer {
             } else if (lexemeType.getCode() == Lexeme.T_VOID.lexemeCode) {
                 lexemeType = scanner.getNextLexeme();
                 if (lexemeType.getCode() == Lexeme.T_MAIN.lexemeCode) {
+                    numberOfMains += 1;
                     lexemeType = scanner.getNextLexeme();
                     if (lexemeType.getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
                         scanner.printError("Ожидался символ (", lexemeType.getName());
@@ -55,6 +57,12 @@ public class Analyzer {
             lastPointer = scanner.getTextPointer();
             lastLine = scanner.getLineNumber();
             lexemeType = scanner.getNextLexeme();
+        }
+
+        if (numberOfMains == 0) {
+            scanner.printError("Функция main отсутствует", lexemeType.getName());
+        } else if (numberOfMains > 1) {
+            scanner.printError("Функция main не является единственной", lexemeType.getName());
         }
     }
 
