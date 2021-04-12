@@ -1,4 +1,4 @@
-package com.linguisticanalysis.scanner.enums;
+package com.linguisticanalysis.enums;
 
 /**
  * Лексема

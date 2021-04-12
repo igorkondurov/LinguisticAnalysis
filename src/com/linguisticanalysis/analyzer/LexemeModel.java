@@ -1,4 +1,4 @@
-package com.linguisticanalysis.scanner.scanner;
+package com.linguisticanalysis.analyzer;
 
 public class LexemeModel {
     private String name;

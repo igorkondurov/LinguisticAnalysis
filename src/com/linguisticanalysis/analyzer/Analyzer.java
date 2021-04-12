@@ -1,11 +1,10 @@
 package com.linguisticanalysis.analyzer;
 
+import com.linguisticanalysis.enums.Lexeme;
 import com.linguisticanalysis.scanner.Scanner;
-import com.linguisticanalysis.scanner.enums.Lexeme;
-import com.linguisticanalysis.scanner.scanner.LexemeModel;
 
 public class Analyzer {
-    private Scanner scanner;
+    private final Scanner scanner;
 
     public Analyzer(Scanner scanner) {
         this.scanner = scanner;
@@ -15,9 +14,9 @@ public class Analyzer {
     // Проверка на лексемы
     private void checkLexeme(Lexeme[] lexemes, String errorText) {
         LexemeModel lexemeType = scanner.getNextLexeme();
-        Boolean errorFlag = true;
-        for (Lexeme lexeme:
-             lexemes) {
+        boolean errorFlag = true;
+        for (Lexeme lexeme :
+                lexemes) {
             if (lexemeType.getCode() == lexeme.lexemeCode) {
                 errorFlag = false;
                 break;
