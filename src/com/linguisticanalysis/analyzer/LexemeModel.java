@@ -12,7 +12,6 @@ public class LexemeModel {
     public String getName() {
         return name;
     }
-
     public int getCode() {
         return code;
     }

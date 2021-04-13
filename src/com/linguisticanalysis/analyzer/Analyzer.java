@@ -93,7 +93,7 @@ public class Analyzer {
      */
     private void A() {
         TF();
-        ID();
+        checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
         checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
         P();
         checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
@@ -134,7 +134,7 @@ public class Analyzer {
         LexemeModel lexemeType;
 
         do {
-            ID();
+            checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
             lastPointer = scanner.getTextPointer();
             lastLine = scanner.getLineNumber();
             lexemeType = scanner.getNextLexeme();
@@ -221,7 +221,7 @@ public class Analyzer {
      * Присваивание
      */
     private void F() {
-        ID();
+        checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
         E();
         A1();
     }
@@ -266,7 +266,7 @@ public class Analyzer {
      * Вызов функции
      */
     private void R() {
-        ID();
+        checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
         checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
         M();
         checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
@@ -282,7 +282,7 @@ public class Analyzer {
             setPointerTo(lastPointer, lastLine);
             do {
                 T();
-                ID();
+                checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
                 lastPointer = scanner.getTextPointer();
                 lastLine = scanner.getLineNumber();
             } while (scanner.getNextLexeme().getCode() == Lexeme.T_COM.lexemeCode);
@@ -323,13 +323,6 @@ public class Analyzer {
     private void E() {
         Lexeme[] lexemes = new Lexeme[]{Lexeme.T_PLUS_EQ, Lexeme.T_SUB_EQ, Lexeme.T_DIV_EQ, Lexeme.T_MUL_EQ, Lexeme.T_EQ};
         checkLexeme(lexemes, "Ожидался оператор присваивания");
-    }
-
-    /**
-     * Идентификатор (име переменной или функции)
-     */
-    private void ID() {
-        checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
     }
 
     /**
@@ -412,7 +405,7 @@ public class Analyzer {
                 R();
             } else {
                 setPointerTo(lastPointer, lastLine);
-                ID();
+                checkLexeme(Lexeme.T_ID, "Ожидалось имя перемнной или функции");
             }
         } else {
             setPointerTo(lastPointer, lastLine);

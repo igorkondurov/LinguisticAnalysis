@@ -1,8 +1,6 @@
 package com.linguisticanalysis.scanner;
-
 import com.linguisticanalysis.analyzer.LexemeModel;
 import com.linguisticanalysis.enums.Lexeme;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -103,8 +101,6 @@ public class Scanner {
 
         // Проверка на конец программы
         if (sourceText[textPointer] == '\0') {
-            currentLexemeSymbols[0] = '#';
-
             return new LexemeModel(arrayToSting(currentLexemeSymbols), Lexeme.T_END.lexemeCode);
         }
 
