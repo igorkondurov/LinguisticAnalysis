@@ -10,38 +10,6 @@ public class Analyzer {
         this.scanner = scanner;
     }
 
-
-    // Проверка на лексемы
-    private void checkLexeme(Lexeme[] lexemes, String errorText) {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        boolean errorFlag = true;
-        for (Lexeme lexeme :
-                lexemes) {
-            if (lexemeType.getCode() == lexeme.lexemeCode) {
-                errorFlag = false;
-                break;
-            }
-        }
-        if (errorFlag) {
-            scanner.printError(errorText, lexemeType.getName());
-        }
-    }
-
-    // Проверка на лексемы
-    private void checkLexeme(Lexeme lexeme, String errorText) {
-        LexemeModel lexemeType = scanner.getNextLexeme();
-        if (lexemeType.getCode() != lexeme.lexemeCode) {
-            scanner.printError(errorText, lexemeType.getName());
-        }
-    }
-
-    // Устанавливает указатель сканера
-    private void setPointerTo(int pointer, int line) {
-        scanner.setTextPointer(pointer);
-        scanner.setLineNumber(line);
-    }
-
-
     /**
      * Аксиома
      */
@@ -88,6 +56,37 @@ public class Analyzer {
             scanner.printError("Функция main не является единственной", lexemeType.getName());
         }
     }
+
+    // Проверка на лексемы
+    private void checkLexeme(Lexeme[] lexemes, String errorText) {
+        LexemeModel lexemeType = scanner.getNextLexeme();
+        boolean errorFlag = true;
+        for (Lexeme lexeme :
+                lexemes) {
+            if (lexemeType.getCode() == lexeme.lexemeCode) {
+                errorFlag = false;
+                break;
+            }
+        }
+        if (errorFlag) {
+            scanner.printError(errorText, lexemeType.getName());
+        }
+    }
+
+    // Проверка на лексемы
+    private void checkLexeme(Lexeme lexeme, String errorText) {
+        LexemeModel lexemeType = scanner.getNextLexeme();
+        if (lexemeType.getCode() != lexeme.lexemeCode) {
+            scanner.printError(errorText, lexemeType.getName());
+        }
+    }
+
+    // Устанавливает указатель сканера
+    private void setPointerTo(int pointer, int line) {
+        scanner.setTextPointer(pointer);
+        scanner.setLineNumber(line);
+    }
+
 
     /**
      * Описание функции
