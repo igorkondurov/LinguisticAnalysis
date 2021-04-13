@@ -93,7 +93,6 @@ public class Analyzer {
      * Описание функции
      */
     private void A() {
-        LexemeModel lexemeType;
         TF();
         ID();
         checkLexeme(Lexeme.T_LEFT_ROUND_BR, "Ожидался символ (");
@@ -280,7 +279,7 @@ public class Analyzer {
     private void P() {
         int lastPointer = scanner.getTextPointer();
         int lastLine = scanner.getLineNumber();
-        if (scanner.getNextLexeme().getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
+        if (scanner.getNextLexeme().getCode() != Lexeme.T_RIGHT_ROUND_BR.lexemeCode) {
             setPointerTo(lastPointer, lastLine);
             do {
                 T();
@@ -290,6 +289,7 @@ public class Analyzer {
             } while (scanner.getNextLexeme().getCode() == Lexeme.T_COM.lexemeCode);
             setPointerTo(lastPointer, lastLine);
         }
+        setPointerTo(lastPointer, lastLine);
     }
 
     /**
@@ -298,7 +298,7 @@ public class Analyzer {
     private void M() {
         int lastPointer = scanner.getTextPointer();
         int lastLine = scanner.getLineNumber();
-        if (scanner.getNextLexeme().getCode() != Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
+        if (scanner.getNextLexeme().getCode() != Lexeme.T_RIGHT_ROUND_BR.lexemeCode) {
             setPointerTo(lastPointer, lastLine);
             do {
                 A1();
@@ -307,6 +307,7 @@ public class Analyzer {
             } while (scanner.getNextLexeme().getCode() == Lexeme.T_COM.lexemeCode);
             setPointerTo(lastPointer, lastLine);
         }
+        setPointerTo(lastPointer, lastLine);
     }
 
     /**
@@ -339,9 +340,11 @@ public class Analyzer {
         int lastPointer;
         int lastLine;
         do {
-            lastPointer = scanner.getTextPointer();
-            lastLine = scanner.getLineNumber();
-            while (scanner.getNextLexeme().getCode() == Lexeme.T_NOT.lexemeCode) ;
+            do {
+                lastPointer = scanner.getTextPointer();
+                lastLine = scanner.getLineNumber();
+            }
+            while (scanner.getNextLexeme().getCode() == Lexeme.T_NOT.lexemeCode);
             setPointerTo(lastPointer, lastLine);
             A2();
             lastPointer = scanner.getTextPointer();
@@ -405,12 +408,12 @@ public class Analyzer {
             A1();
             checkLexeme(Lexeme.T_RIGHT_ROUND_BR, "Ожидался символ )");
         } else if (lexemeType.getCode() == Lexeme.T_ID.lexemeCode) {
-            lastPointer = scanner.getTextPointer();
-            lastLine = scanner.getLineNumber();
-            lexemeType = scanner.getNextLexeme();
-            setPointerTo(lastPointer, lastLine);
-            if (lexemeType.getCode() == Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
+            if (scanner.getNextLexeme().getCode() == Lexeme.T_LEFT_ROUND_BR.lexemeCode) {
+                setPointerTo(lastPointer, lastLine);
                 R();
+            } else {
+                setPointerTo(lastPointer, lastLine);
+                ID();
             }
         } else {
             setPointerTo(lastPointer, lastLine);
